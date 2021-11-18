@@ -1,0 +1,5 @@
+{
+  "db_config_file": "db_config.json",
+  "song_data_file": "/home/alex/qi3/ce_notes_distinct/databases/data_engineer/data_modeling/data/song_data",
+  "log_data_file": "/home/alex/qi3/ce_notes_distinct/databases/data_engineer/data_modeling/data/log_data"
+}
