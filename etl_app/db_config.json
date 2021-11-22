@@ -2,7 +2,7 @@
   "db_type": "MongoDB",
   "db_name": "sparkifydb",
   "db_host": "localhost",
-  "db_port": 3306,
+  "db_port": 27017,
   "db_user": "root",
   "db_user_pass": "david_hilbert"
 }
