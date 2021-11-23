@@ -2,9 +2,12 @@
 Create the MongoDB database for the ETL.
 https://www.mongodb.com/blog/post/getting-started-with-python-and-mongodb
 """
+import json
 from pymongo import MongoClient
 from pprint import pprint
 
+
+USERS_COLLECTION = "users"
 
 def create_db(db_configuration):
     """
@@ -33,6 +36,29 @@ def create_db(db_configuration):
         # create the database
         db = client[db_configuration["db_name"]]
 
-        return client
+        # create the collections
+        db[USERS_COLLECTION]
+
+        return client, db
 
     raise ValueError("Invalid db_host. {} is not a valid db_host".format(db_configuration))
+
+
+def populate_users_collection(db, data):
+    """
+    Insert the data into the
+    :param connection:
+    :param data:
+    :return:
+    """
+
+    #print(data.to_json())
+
+    for index, row in data.iterrows():
+        data_row = {"user_id": row["userId"],
+                    "firstName": row["firstName"],
+                    "lastName": row["lastName"], "gender": row["gender"],
+                    "level": row["level"]}
+
+
+        db.USERS_COLLECTION.insert_one(data_row)

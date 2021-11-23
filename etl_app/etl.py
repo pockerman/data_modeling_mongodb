@@ -1,9 +1,12 @@
 import argparse
 import json
+from pathlib import Path
 
 from etl_app.utils import read_configuration_file
 from etl_app.utils import INFO
-from etl_app.create_db import create_db
+from etl_app.create_db import create_db, populate_users_collection
+
+from etl_app.clean_and_create import process_log_files
 
 
 def main(configuration):
@@ -13,10 +16,26 @@ def main(configuration):
     :return: None
     """
 
+    # read the configuration file
+    db_config_file = Path(configuration["db_config_file"])
     with open(configuration["db_config_file"], "r") as db_f:
+        print("INFO: Loading configuration file at {0}".format(db_config_file))
         db_config = json.load(db_f)
-        coonection = create_db(db_configuration=db_config)
 
+        try:
+            print("INFO: Creating DB....")
+            connection, db = create_db(db_configuration=db_config)
+            print("INFO: Done creating DB....")
+            print("INFO: Create users collection....")
+
+            # create the users collection
+            process_log_files(connection=connection, db=db,
+                              filepath=Path(configuration["log_data_file"]),
+                               users_insert_func=populate_users_collection)
+        except Exception as e:
+            print("ERROR: Could not create DB. Error msg: {0}".format(str(e)))
+        finally:
+            connection.close()
 
 
 if __name__ == '__main__':
