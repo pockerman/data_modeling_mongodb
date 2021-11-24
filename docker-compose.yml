@@ -1,0 +1,28 @@
+version: '3.3'
+
+services:
+  etl_app:
+    build: ./etl_app
+    container_name: etl_container
+    volumes:
+      - mysql_volume:/usr/data/mysql_data
+    env_file:
+      - ./.env.dev
+    command: python etl.py 
+    depends_on:
+      - db
+  db:
+    image: mysql:5.7
+    container_name: mysql_etl_container
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_DB: 'sparkifydb'
+      MYSQL_USER: 'root'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'  
+    volumes:
+       - mysql_volume:/usr/data/mysql_data 
+       
+volumes:
+    mysql_volume:
