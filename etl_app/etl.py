@@ -4,7 +4,7 @@ from pathlib import Path
 
 from etl_app.utils import read_configuration_file
 from etl_app.utils import INFO
-from etl_app.create_db import create_db, populate_users_collection
+from etl_app.db_utilities import create_db, populate_users_collection
 
 from etl_app.clean_and_create import process_log_files
 

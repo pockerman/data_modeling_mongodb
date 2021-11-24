@@ -8,6 +8,7 @@ from pprint import pprint
 
 
 USERS_COLLECTION = "users"
+ARTISTS_COLLECTION = "artists"
 
 def create_db(db_configuration):
     """
@@ -38,27 +39,58 @@ def create_db(db_configuration):
 
         # create the collections
         db[USERS_COLLECTION]
+        db[ARTISTS_COLLECTION]
 
         return client, db
 
     raise ValueError("Invalid db_host. {} is not a valid db_host".format(db_configuration))
 
 
-def populate_users_collection(db, data):
+def has_artist(db, artist_data):
     """
-    Insert the data into the
-    :param connection:
-    :param data:
+    Returns True if the given artist
+    :param db:
+    :param artist_data:
     :return:
     """
+    result = db.find_one(artist_data)
+    return result
 
-    #print(data.to_json())
+
+def update_artist_songs(db, artist_data, songs):
+    """
+    Update the songs of the artist identified by artist data
+
+    :param db: The DB instance
+    :param artist_data: The data identifying the artist
+    :param songs: The new songs to add
+    :return: None
+    """
+    db.ARTISTS_COLLECTION.find_and_modify(query=artist_data, update={"$addToSet": songs})
+
+
+def insert_one_artist(db, artist_data):
+    """
+    Persist the data into the ARTISTS_COLLECTION in the given database instance
+    :param db: The DB instance
+    :param artist_data: The data to persist
+    :return: None
+    """
+    db.ARTISTS_COLLECTION.insert_one(artist_data)
+
+
+def populate_users_collection(db, data):
+    """
+    Persist the data into the USERS_COLLECTION in the given database instance
+    :param db: The DB instance
+    :param data: The data to persist
+    :return: None
+    """
 
     for index, row in data.iterrows():
         data_row = {"user_id": row["userId"],
                     "firstName": row["firstName"],
                     "lastName": row["lastName"], "gender": row["gender"],
                     "level": row["level"]}
-
 
         db.USERS_COLLECTION.insert_one(data_row)
