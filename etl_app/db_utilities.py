@@ -9,6 +9,8 @@ from pprint import pprint
 
 USERS_COLLECTION = "users"
 ARTISTS_COLLECTION = "artists"
+TIME_COLECTION = "time"
+SONG_PLAY_COLLECTION = "song_plays"
 
 def create_db(db_configuration):
     """
@@ -40,6 +42,7 @@ def create_db(db_configuration):
         # create the collections
         db[USERS_COLLECTION]
         db[ARTISTS_COLLECTION]
+        db[TIME_COLECTION]
 
         return client, db
 
@@ -53,7 +56,21 @@ def has_artist(db, artist_data):
     :param artist_data:
     :return:
     """
-    result = db.find_one(artist_data)
+    result = db[ARTISTS_COLLECTION].find_one(artist_data)
+    return result
+
+
+def has_song(db, artist_data, song_title):
+    """
+    Search in the artists collection for the artist represented
+    by the artist_data for the song with title song_title
+    :param db: The db instance
+    :param artist_data: The artist_data
+    :param song_title: Song title to search for
+    :return:
+    """
+
+    result = db[ARTISTS_COLLECTION].find_one({"name": artist_data["name"], "songs": {"title": song_title}})
     return result
 
 
@@ -66,7 +83,7 @@ def update_artist_songs(db, artist_data, songs):
     :param songs: The new songs to add
     :return: None
     """
-    db.ARTISTS_COLLECTION.find_and_modify(query=artist_data, update={"$addToSet": songs})
+    db[ARTISTS_COLLECTION].update(artist_data, {"$push": {"songs": songs}})
 
 
 def insert_one_artist(db, artist_data):
@@ -76,7 +93,7 @@ def insert_one_artist(db, artist_data):
     :param artist_data: The data to persist
     :return: None
     """
-    db.ARTISTS_COLLECTION.insert_one(artist_data)
+    db[ARTISTS_COLLECTION].insert_one(artist_data)
 
 
 def populate_users_collection(db, data):
@@ -93,4 +110,11 @@ def populate_users_collection(db, data):
                     "lastName": row["lastName"], "gender": row["gender"],
                     "level": row["level"]}
 
-        db.USERS_COLLECTION.insert_one(data_row)
+        db[USERS_COLLECTION].insert_one(data_row)
+
+
+def insert_into_time(db, time_data):
+    db[TIME_COLECTION].insert_one(time_data)
+
+def insert_into_songplays(db, song_play_data):
+

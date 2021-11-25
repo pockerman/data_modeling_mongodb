@@ -5,24 +5,23 @@ services:
     build: ./etl_app
     container_name: etl_container
     volumes:
-      - mysql_volume:/usr/data/mysql_data
+      - mysql_volume:/usr/data/mongodb_data
     env_file:
       - ./.env.dev
     command: python etl.py 
     depends_on:
       - db
   db:
-    image: mysql:5.7
-    container_name: mysql_etl_container
+    image: mongo:5.0.4
+    container_name: mongodb_etl_container
     ports:
-      - '3306:3306'
+      - '27017:27017'
     environment:
-      MYSQL_DB: 'sparkifydb'
-      MYSQL_USER: 'root'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'password'  
+      MONGO_INITDB_DATABASE: 'sparkifydb'
+      MONGO_INITDB_ROOT_USERNAME: 'root'
+      MONGO_INITDB_ROOT_PASSWORD: 'password'  
     volumes:
-       - mysql_volume:/usr/data/mysql_data 
+       - mongodb_volume:/usr/data/mongodb_data 
        
 volumes:
-    mysql_volume:
+    mongodb_volume:
