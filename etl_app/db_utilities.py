@@ -117,4 +117,5 @@ def insert_into_time(db, time_data):
     db[TIME_COLECTION].insert_one(time_data)
 
 def insert_into_songplays(db, song_play_data):
+    pass
 
