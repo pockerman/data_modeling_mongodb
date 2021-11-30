@@ -4,9 +4,8 @@ from pathlib import Path
 
 from etl_app.utils import read_configuration_file
 from etl_app.utils import INFO
-from etl_app.db_utilities import create_db #, populate_users_collection
-
-from etl_app.clean_and_create import process_log_files, process_artists
+from etl_app.db_utilities import create_db
+from etl_app.clean_and_create import process_log_files, process_artists, process_songplays_collection
 
 
 def main(configuration):
@@ -30,12 +29,15 @@ def main(configuration):
 
             # create the users collection
             process_log_files(db=db, filepath=Path(configuration["log_data_file"]))
-
             print("INFO: Done")
+
             print("INFO: Create artists collection....")
             process_artists(db=db, filepath=Path(configuration["song_data_file"]))
             print("INFO: Done")
 
+            print("INFO: Create songplays collection....")
+            process_songplays_collection(db=db, filepath=Path(configuration["song_data_file"]))
+            print("INFO: Done")
         except Exception as e:
             print("ERROR: Could not create DB. Error msg: {0}".format(str(e)))
         finally:

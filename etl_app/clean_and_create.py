@@ -4,7 +4,7 @@ import pandas as pd
 import glob
 
 from db_utilities import has_artist, update_artist_songs, \
-    insert_one_artist, populate_users_collection, has_song, insert_into_time
+    insert_one_artist, populate_users_collection, has_song, insert_into_time, insert_into_songplays
 
 
 def collect_files(filepath: Path) -> list:
@@ -127,12 +127,73 @@ def process_users_collection(db, filepath: Path):
     column_labels = ('start_time', 'hour', 'day', 'week', 'month', 'year', 'weekday')
     time_df = pd.DataFrame.from_dict(dict(zip(column_labels, time_data)))
 
-    for i, row in time_df.iterrows():
+    #for i, row in time_df.iterrows():
 
-        time_data = {"time": row["start_time"], "hour": row["hour"], "day": row["day"],
-                     "week": row["week"], 'month': row["month"], "year": row["year"],
-                     "weekday": row["weekday"]}
-        insert_into_time(db=db, time_data=time_data)
+    #    time_data = {"time": row["start_time"], "hour": row["hour"], "day": row["day"],
+    #                 "week": row["week"], 'month': row["month"], "year": row["year"],
+    #                 "weekday": row["weekday"]}
+    #    insert_into_time(db=db, time_data=time_data)
 
     populate_users_collection(db=db, data=user_df)
+
+
+def process_songplays_collection(db, filepath: Path) -> None:
+    df = pd.read_json(filepath, lines=True)
+
+    # filter by NextSong action
+    df = df[df['page'] == 'NextSong']
+
+    # convert timestamp column to datetime
+    t = pd.to_datetime(df['ts'], unit='ms')
+    df['ts'] = pd.to_datetime(df['ts'], unit='ms')
+
+    # load user table
+    user_df = df[['userId', 'firstName', 'lastName', 'gender', 'level']]
+    user_df = user_df.drop_duplicates()
+
+    # insert time data records
+    time_data = (t, t.dt.hour, t.dt.day, t.dt.isocalendar().week, t.dt.month, t.dt.year, t.dt.weekday)
+    column_labels = ('start_time', 'hour', 'day', 'week', 'month', 'year', 'weekday')
+    time_df = pd.DataFrame.from_dict(dict(zip(column_labels, time_data)))
+
+    # insert songplay records
+    for index, row in df.iterrows():
+
+        song = row["song"]
+        artist = row["artist"]
+        length = row["length"]
+
+        # fetch the artist data for the artist with the
+        # given name that has the song with the given name
+        artist_query_data = {"name": artist}
+        artist_data = has_song(artist_query_data, song_title=song)
+
+        if artist_data is not None:
+
+            song_data = {"time_start": row.ts, "user_id": row.userId,
+                         "user_agent": row.userAgent, "ssession_id": row.sessionId,
+                         "artist_id": artist_data["artist_id"],
+                         "song_id": artist_data["songs"]}
+            insert_into_songplays(db=db, song_data=song_data)
+
+        # get songid and artistid from song and artist tables
+        #cur.execute(song_select, (row.song, row.artist, row.length))
+        #results = cur.fetchone()
+
+        #if results:
+        #    songid, artistid = results
+        #else:
+        #    songid, artistid = None, None
+
+        # insert songplay record
+        #songplay_data = (row.ts, row.userId, row.level, songid, artistid, row.sessionId, row.location, row.userAgent)
+        #cur.execute(songplay_table_insert, songplay_data)
+
+    #for i, row in time_df.iterrows():
+    #    time_data = {"time": row["start_time"], "hour": row["hour"], "day": row["day"],
+    #                 "week": row["week"], 'month': row["month"], "year": row["year"],
+    #                 "weekday": row["weekday"]}
+    #    insert_into_time(db=db, time_data=time_data)
+
+    #populate_users_collection(db=db, data=user_df)
 

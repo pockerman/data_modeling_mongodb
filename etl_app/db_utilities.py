@@ -42,7 +42,7 @@ def create_db(db_configuration):
         # create the collections
         db[USERS_COLLECTION]
         db[ARTISTS_COLLECTION]
-        db[TIME_COLECTION]
+        db[SONG_PLAY_COLLECTION]
 
         return client, db
 
@@ -116,6 +116,7 @@ def populate_users_collection(db, data):
 def insert_into_time(db, time_data):
     db[TIME_COLECTION].insert_one(time_data)
 
+
 def insert_into_songplays(db, song_play_data):
-    pass
+    db[SONG_PLAY_COLLECTION].insert_one(song_play_data)
 
